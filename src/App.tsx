@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "./componentes/Header";
 
 import TaskInput from "./componentes/TaskInput";
@@ -16,26 +16,53 @@ export interface Task {
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  const addTask = (text: string) => {
-    const newTask: Task = {
-      id: Date.now(),
-      text,
-      completed: false,
-    };
-    setTasks([newTask, ...tasks]);
+  //conectrar con el backend
+  useEffect(() => {
+  fetch("http://localhost:3000/tasks")
+    .then((res) => res.json())
+    .then((data) => setTasks(data));
+}, []);
+// backend connection
+
+  const addTask = async (text: string) => {
+  const newTask = {
+    id: Date.now(),
+    text,
+    completed: false,
   };
 
-  const deleteTask = (id: number) => {
-    setTasks(tasks.filter((task) => task.id !== id));
-  };
+  const res = await fetch("http://localhost:3000/tasks", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(newTask),
+  });
 
-  const toggleTask = (id: number) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
-  };
+  const data = await res.json();
+  setTasks([data, ...tasks]);
+};
+
+ const deleteTask = async (id: number) => {
+  await fetch(`http://localhost:3000/tasks/${id}`, {
+    method: "DELETE",
+  });
+
+  setTasks(tasks.filter((task) => task.id !== id));
+};
+
+//toogle task
+const toggleTask = async (id: number) => {
+  await fetch(`http://localhost:3000/tasks/${id}`, {
+    method: "PUT",
+  });
+
+  setTasks(
+    tasks.map((task) =>
+      task.id === id ? { ...task, completed: !task.completed } : task
+    )
+  );
+};
 
   return (
     <div className="app">
