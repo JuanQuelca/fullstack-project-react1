@@ -9,7 +9,8 @@ const { PrismaClient } = require("@prisma/client");
 
 const app = express();
 const prisma = new PrismaClient();
-const PORT = 3000;
+//const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 /*
 app.use(cors());
 app.use(express.json());
@@ -112,7 +113,11 @@ app.get("/private", verifyToken, (req, res) => {
   res.json({ message: "Acceso permitido" });
 });
 
-
+/*
 app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+*/
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
