@@ -1,57 +1,63 @@
+type Request = import("express").Request;
+type Response = import("express").Response;
+
 const express = require("express");
-// const cors = require("cors"); habilitamos
 const cors = require("cors");
-// habilitamos CORS para permitir solicitudes desde el frontend
+const { PrismaClient } = require("@prisma/client");
 
 const app = express();
+const prisma = new PrismaClient();
 const PORT = 3000;
+
+app.use(cors());
 app.use(express.json());
-app.use(cors()); 
 
-let tasks = [
-  
-  { id: 1, text: 'Study express', completed: false },
-  { id: 2, text: 'Build backend', completed: true },
-];
-app.get("/", (req: any, res: any)=>{
-    res.send("Backend is working!");
-});
-app.get("/tasks", (req: any, res: any)=>{
-    res.json(tasks);
+app.get("/", (req: Request, res: Response) => {
+  res.send("Backend is working!");
 });
 
-
-app.post("/tasks", (req: any, res: any)=>{
-    console.log("POST /tasks FUE LLAMADO");
-    console.log("Datos recibidos:", req.body);
-
-    const newTask = {
-        id:req.body.id,
-        text:req.body.text,
-        completed:req.body.completed
-    };
-    tasks.push(newTask);
-    console.log("lista actualizada:", tasks);
-
-    res.json(newTask);
+app.get("/tasks", async (req: Request, res: Response) => {
+  const tasks = await prisma.task.findMany({
+    orderBy: { id: "desc" },
+  });
+  res.json(tasks);
 });
-//delete task
-app.delete("/tasks/:id", (req: any, res: any) => {
-  const id = parseInt(req.params.id);
-  tasks = tasks.filter((t) => t.id !== id);
+
+app.post("/tasks", async (req: Request, res: Response) => {
+  const { text } = req.body;
+
+  const newTask = await prisma.task.create({
+    data: { text, completed: false },
+  });
+
+  res.json(newTask);
+});
+
+app.delete("/tasks/:id", async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id as string);
+
+  await prisma.task.delete({
+    where: { id },
+  });
+
   res.json({ message: "Deleted" });
 });
-//toggle task
-app.put("/tasks/:id", (req: any, res: any) => {
-  const id = parseInt(req.params.id);
 
-  tasks = tasks.map((t) =>
-    t.id === id ? { ...t, completed: !t.completed } : t
-  );
+app.put("/tasks/:id", async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id as string);
 
-  res.json({ message: "Updated" });
+  const task = await prisma.task.findUnique({
+    where: { id },
+  });
+
+  const updated = await prisma.task.update({
+    where: { id },
+    data: { completed: !task?.completed },
+  });
+
+  res.json(updated);
 });
-// modify task
-app.listen(PORT, () =>{
-    console.log(`Server is running on port ${PORT}`);
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

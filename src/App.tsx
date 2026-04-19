@@ -26,7 +26,7 @@ export default function App() {
 
   const addTask = async (text: string) => {
   const newTask = {
-    id: Date.now(),
+    //id: Date.now(),
     text,
     completed: false,
   };
