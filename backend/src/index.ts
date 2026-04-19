@@ -15,7 +15,7 @@ app.use(cors());
 app.use(express.json());
 */
 app.use(cors({
-  origin: "https://tu-frontend.vercel.app"
+  origin: "https://fullstack-project-react1-dnw8.vercel.app/"
 }));
 
 
