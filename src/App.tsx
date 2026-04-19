@@ -7,7 +7,9 @@ import Footer from "./componentes/Footer";
 import EmptyState from "./componentes/EmptyState";
 import "./index.css";
 
-const API_URL = "http://localhost:3000";
+//const API_URL = "http://localhost:3000";
+
+const API_URL = import.meta.env.VITE_API_URL;
 export interface Task {
   id: number;
   text: string;

@@ -10,9 +10,14 @@ const { PrismaClient } = require("@prisma/client");
 const app = express();
 const prisma = new PrismaClient();
 const PORT = 3000;
-
+/*
 app.use(cors());
 app.use(express.json());
+*/
+app.use(cors({
+  origin: "https://tu-frontend.vercel.app"
+}));
+
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Backend is working!");
