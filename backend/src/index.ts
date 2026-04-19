@@ -43,6 +43,7 @@ app.delete("/tasks/:id", async (req: Request, res: Response) => {
   res.json({ message: "Deleted" });
 });
 
+/*
 app.put("/tasks/:id", async (req: Request, res: Response) => {
   const id = parseInt(req.params.id as string);
 
@@ -57,6 +58,22 @@ app.put("/tasks/:id", async (req: Request, res: Response) => {
 
   res.json(updated);
 });
+*/
+app.put("/tasks/:id", async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id as string);
+  const { text, completed } = req.body;
+
+  const updated = await prisma.task.update({
+    where: { id },
+    data: {
+      text,
+      completed,
+    },
+  });
+
+  res.json(updated);
+});
+
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

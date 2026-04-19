@@ -7,6 +7,7 @@ import Footer from "./componentes/Footer";
 import EmptyState from "./componentes/EmptyState";
 import "./index.css";
 
+const API_URL = "http://localhost:3000";
 export interface Task {
   id: number;
   text: string;
@@ -16,53 +17,78 @@ export interface Task {
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  //conectrar con el backend
-  useEffect(() => {
-  fetch("http://localhost:3000/tasks")
-    .then((res) => res.json())
-    .then((data) => setTasks(data));
-}, []);
-// backend connection
+const fetchTasks = async () => {
+  const res = await fetch(`${API_URL}/tasks`);
+  const data = await res.json();
+  setTasks(data);
+};
 
+  //conectrar con el backend
+useEffect(() => {
+  fetchTasks();
+}, []);
+
+//********* */
+ // agregar
   const addTask = async (text: string) => {
-  const newTask = {
-    //id: Date.now(),
-    text,
-    completed: false,
+    await fetch(`${API_URL}/tasks`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text }),
+    });
+
+    fetchTasks();
   };
 
-  const res = await fetch("http://localhost:3000/tasks", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(newTask),
-  });
+  //  eliminar
+  const deleteTask = async (id: number) => {
+    await fetch(`${API_URL}/tasks/${id}`, {
+      method: "DELETE",
+    });
 
-  const data = await res.json();
-  setTasks([data, ...tasks]);
-};
+    fetchTasks();
+  };
 
- const deleteTask = async (id: number) => {
-  await fetch(`http://localhost:3000/tasks/${id}`, {
-    method: "DELETE",
-  });
+  // toggle
+  const toggleTask = async (id: number) => {
+    //const task = tasks.find((t: any) => t.id === id);
+    const task = tasks.find((t) => t.id === id);
 
-  setTasks(tasks.filter((task) => task.id !== id));
-};
+    await fetch(`${API_URL}/tasks/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text: task?.text,
+        completed: !task?.completed,
+      }),
+    });
 
-//toogle task
-const toggleTask = async (id: number) => {
-  await fetch(`http://localhost:3000/tasks/${id}`, {
-    method: "PUT",
-  });
+    fetchTasks();
+  };
 
-  setTasks(
-    tasks.map((task) =>
-      task.id === id ? { ...task, completed: !task.completed } : task
-    )
-  );
-};
+  // editar
+  const editTask = async (id: number, newText: string) => {
+    const task = tasks.find((t: any) => t.id === id);
+
+    await fetch(`${API_URL}/tasks/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text: newText,
+        completed: task?.completed,
+      }),
+    });
+
+    fetchTasks();
+  };
+
+//******** */
 
   return (
     <div className="app">
@@ -77,6 +103,7 @@ const toggleTask = async (id: number) => {
             tasks={tasks}
             onDelete={deleteTask}
             onToggle={toggleTask}
+            onEdit={editTask}
           />
         )}
 
@@ -85,5 +112,3 @@ const toggleTask = async (id: number) => {
     </div>
   );
 }
-
-
